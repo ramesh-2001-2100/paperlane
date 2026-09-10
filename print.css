@@ -1,0 +1,12 @@
+body { background: #fff; }
+.sidebar, .topbar, .formatbar, .editor-pane, .resize-handle, .toast { display: none !important; }
+.workspace, .document-area, .preview-pane { display: block !important; background: #fff !important; overflow: visible !important; }
+.preview-pane { padding: 0 !important; }
+.pane-meta { display: none !important; }
+.prose { max-width: none; font-size: 12pt; line-height: 1.6; }
+.prose h1 { font-size: 28pt; }
+.prose h2 { font-size: 20pt; }
+.prose h3 { font-size: 15pt; }
+.prose a { color: #222; text-decoration: none; }
+.prose pre { white-space: pre-wrap; }
+.prose table { page-break-inside: avoid; }
