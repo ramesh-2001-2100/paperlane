@@ -6,3 +6,5 @@
 .sidebar-header{display:flex;align-items:center;justify-content:space-between}.close-library{display:none}
 @media(max-width:780px){.sidebar-header .brand{padding-bottom:25px}.close-library{display:block;border:0;background:transparent;color:#d9dadd;padding:7px 0 7px 8px;font:500 12px "DM Sans";cursor:pointer}.export-button{padding:9px 10px;background:#292b31;color:#fff;font-size:11px}.export-button span{font-size:14px;margin-left:3px}}
 .mobile-view-toggle svg{width:20px;height:20px}.font-sync-btn{border:0;background:transparent;color:#77746e;font:500 10px "DM Sans";cursor:pointer;padding:4px 6px;border-radius:4px;opacity:.7;margin-left:4px;transition:all .2s ease}.font-sync-btn:hover{opacity:1;background:#f6f3ed;color:#555}
+
+@media(min-width:781px){.preview-pane{box-shadow:-14px 0 30px #392c201a}}
