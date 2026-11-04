@@ -1,12 +1,89 @@
 const starter = `# A quieter place to write\n\nWelcome to **Paperlane**, a small markdown studio designed to stay out of your way. Your work is saved automatically in this browser.\n\n## Made for thinking\n\nUse the toolbar to add structure, or write markdown directly. Choose a typeface that feels right, and watch the reading view update as you go.\n\n> Good writing begins when the tools disappear.\n\n### A few useful things\n\n- Clean, focused writing space\n- Live rendered preview\n- Export when you're ready\n\n| Shortcut | What it does |\n| --- | --- |\n| Cmd / Ctrl + N | New document |\n| Cmd / Ctrl + S | Download Markdown |\n\n[Learn markdown](https://www.markdownguide.org/basic-syntax/)`;
-const editor = document.querySelector('#editor'), preview = document.querySelector('#preview'), nameEl = document.querySelector('#documentName'), statusEl = document.querySelector('#saveStatus'), list = document.querySelector('#documentList'), fileInput = document.querySelector('#fileInput'), sidebar = document.querySelector('#sidebar'), sidebarToggle = document.querySelector('#sidebarToggle'), sidebarScrim = document.querySelector('#sidebarScrim'), closeLibraryButton = document.querySelector('#closeLibrary'), mobileViewToggle = document.querySelector('#mobileViewToggle');
+const editor = document.querySelector('#editor'), preview = document.querySelector('#preview'), nameEl = document.querySelector('#documentName'), statusEl = document.querySelector('#saveStatus'), list = document.querySelector('#documentList'), fileInput = document.querySelector('#fileInput'), sidebar = document.querySelector('#sidebar'), sidebarToggle = document.querySelector('#sidebarToggle'), sidebarScrim = document.querySelector('#sidebarScrim'), closeLibraryButton = document.querySelector('#closeLibrary'), mobileViewToggle = document.querySelector('#mobileViewToggle'), fontChoice = document.querySelector('#fontChoice');
 let docs = JSON.parse(localStorage.getItem('paperlane-documents') || '[]');
 let activeId = localStorage.getItem('paperlane-active');
 if (!docs.length) { activeId = crypto.randomUUID(); docs = [{id: activeId, content: starter, updated: Date.now()}]; }
 if (!docs.some(d => d.id === activeId)) activeId = docs[0].id;
 const active = () => docs.find(d => d.id === activeId);
+
+// Font system configuration
+const fonts = {
+  literata: 'Literata, Georgia, serif',
+  calibri: 'Calibri, Candara, sans-serif',
+  helvetica: 'Helvetica, Arial, sans-serif',
+  mono: '"DM Mono", monospace'
+};
+
+// Font selector state
+let fontState = {
+  editor: localStorage.getItem('paperlane-font') || 'literata',
+  preview: localStorage.getItem('paperlane-font') || 'literata'
+};
 const titleFrom = content => (content.match(/^\s*#\s+(.+)/m)?.[1] || content.split('\n').find(l => l.trim()) || 'Untitled note').replace(/[#*_`]/g, '').trim().slice(0, 52);
 marked.use({gfm:true, breaks:true});
+// Font selector initialization
+function initializeFontSelector() {
+  // Set initial font values from state
+  editor.style.fontFamily = fonts[fontState.editor];
+  preview.style.setProperty('--preview-font', fonts[fontState.preview]);
+  
+  // Update font choice dropdown to reflect current selection
+  fontChoice.value = fontState.editor;
+}
+
+// Enhanced font change handler with visual feedback
+function changeFont(fontKey, element, isPreview = false) {
+  if (!fonts[fontKey]) return;
+  
+  // Update font state
+  if (isPreview) {
+    fontState.preview = fontKey;
+    preview.style.setProperty('--preview-font', fonts[fontKey]);
+  } else {
+    fontState.editor = fontKey;
+    editor.style.fontFamily = fonts[fontKey];
+  }
+  
+  // Save to localStorage
+  localStorage.setItem('paperlane-font', fontKey);
+  
+  // Show visual feedback
+  showFontChangeFeedback(fontKey, isPreview);
+}
+
+// Visual feedback for font changes
+function showFontChangeFeedback(fontKey, isPreview) {
+  const feedback = document.createElement('div');
+  feedback.className = 'font-change-feedback';
+  feedback.textContent = fonts[fontKey].split(',')[0];
+  feedback.style.position = 'fixed';
+  feedback.style.bottom = '30px';
+  feedback.style.left = '50%';
+  feedback.style.transform = 'translateX(-50%)';
+  feedback.style.background = 'rgba(41, 43, 65, 0.9)';
+  feedback.style.color = 'white';
+  feedback.style.padding = '8px 16px';
+  feedback.style.borderRadius = '8px';
+  feedback.style.fontSize = '12px';
+  feedback.style.fontFamily = fonts[fontKey];
+  feedback.style.zIndex = '1000';
+  feedback.style.opacity = '0';
+  feedback.style.transition = 'opacity 0.3s ease';
+  
+  document.body.appendChild(feedback);
+  
+  setTimeout(() => {
+    feedback.style.opacity = '1';
+  }, 10);
+  
+  setTimeout(() => {
+    feedback.style.opacity = '0';
+    setTimeout(() => {
+      document.body.removeChild(feedback);
+    }, 300);
+  }, 1500);
+}
+
 function render(){ const doc=active(); if(!doc){editor.value='';preview.innerHTML='';nameEl.textContent='No document selected';statusEl.textContent='Create or open a file';document.querySelector('#wordCount').textContent='0 words';renderList();return} editor.value=doc.content; updatePreview(); renderList(); }
 function updatePreview(){ const doc=active(); if(!doc)return; doc.content=editor.value; const title=titleFrom(doc.content); nameEl.textContent=title; document.title=`${title} — Paperlane`; preview.innerHTML=DOMPurify.sanitize(marked.parse(doc.content)); document.querySelector('#wordCount').textContent=`${(doc.content.trim().match(/\S+/g)||[]).length} words`; saveSoon(); }
 function persist(){localStorage.setItem('paperlane-documents',JSON.stringify(docs));if(activeId)localStorage.setItem('paperlane-active',activeId);else localStorage.removeItem('paperlane-active')}
@@ -18,12 +95,12 @@ function selectWrap(before,after='',fallback='text'){const s=editor.selectionSta
 const linePrefix = prefix => {const s=editor.selectionStart,e=editor.selectionEnd,start=editor.value.lastIndexOf('\n',s-1)+1,end=editor.value.indexOf('\n',e);const stop=end<0?editor.value.length:end;const lines=editor.value.slice(start,stop).split('\n').map(x=>prefix+x).join('\n');editor.setRangeText(lines,start,stop,'select');editor.focus();updatePreview()};
 document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>{const c=b.dataset.command;if(c==='bold')selectWrap('**','**');if(c==='italic')selectWrap('_','_');if(c==='code')selectWrap('`','`');if(c==='link')selectWrap('[','](https://)');if(c==='image')selectWrap('![','](https://images.unsplash.com/photo-1516979187457-637abb4f9353)');if(c==='ul')linePrefix('- ');if(c==='ol')linePrefix('1. ');if(c==='task')linePrefix('- [ ] ');if(c==='table')selectWrap('\n| Column one | Column two |\n| --- | --- |\n| Text | Text |\n','','');});
 document.querySelector('#blockStyle').onchange=e=>{const v=e.target.value;if(v==='p')return;if(v==='quote')linePrefix('> ');else linePrefix('#'.repeat(+v[1])+' ');e.target.value='p'};
-const fonts={literata:'Literata, Georgia, serif',calibri:'Calibri, Candara, sans-serif',helvetica:'Helvetica, Arial, sans-serif',mono:'"DM Mono", monospace'};
-const editorFontChoice=document.querySelector('#fontChoice'),previewFontChoice=document.querySelector('#previewFontChoice');
-editorFontChoice.onchange=e=>{editor.style.fontFamily=fonts[e.target.value];localStorage.setItem('paperlane-editor-font',e.target.value)};
-previewFontChoice.onchange=e=>{preview.style.setProperty('--preview-font',fonts[e.target.value]);localStorage.setItem('paperlane-preview-font',e.target.value)};
-editorFontChoice.value=localStorage.getItem('paperlane-editor-font')||localStorage.getItem('paperlane-font')||'literata';editorFontChoice.dispatchEvent(new Event('change'));
-previewFontChoice.value=localStorage.getItem('paperlane-preview-font')||'literata';previewFontChoice.dispatchEvent(new Event('change'));
+const previewFontChoice=document.querySelector('#previewFontChoice');
+function applyFont(fontKey,showFeedback){if(!fonts[fontKey])return;fontState.editor=fontKey;fontState.preview=fontKey;editor.style.fontFamily=fonts[fontKey];preview.style.setProperty('--preview-font',fonts[fontKey]);localStorage.setItem('paperlane-font',fontKey);fontChoice.value=fontKey;previewFontChoice.value=fontKey;if(showFeedback)showFontChangeFeedback(fontKey,false)}
+fontChoice.onchange=e=>applyFont(e.target.value);
+previewFontChoice.onchange=e=>applyFont(e.target.value);
+document.querySelector('#fontSyncBtn').onclick=()=>applyFont(fontChoice.value);
+applyFont(localStorage.getItem('paperlane-font')||'literata',false);
 document.querySelector('#newFile').onclick=()=>{activeId=crypto.randomUUID();docs.unshift({id:activeId,content:'# Untitled note\n\n',updated:Date.now()});render();if(matchMedia('(max-width: 780px)').matches){closeLibrary();setMobilePane('editor')}editor.focus();};
 document.querySelector('#openFile').onclick=()=>fileInput.click();fileInput.onchange=async e=>{const f=e.target.files[0];if(!f)return;activeId=crypto.randomUUID();docs.unshift({id:activeId,content:await f.text(),updated:Date.now()});render();toast('Opened '+f.name);e.target.value=''};
 document.querySelector('#exportMenu').onclick=()=>{const popover=document.querySelector('#exportPopover'),isOpen=popover.classList.toggle('open');document.querySelector('#exportMenu').setAttribute('aria-expanded',String(isOpen))};document.addEventListener('click',e=>{if(!e.target.closest('.export-wrap')){document.querySelector('#exportPopover').classList.remove('open');document.querySelector('#exportMenu').setAttribute('aria-expanded','false')}});
