@@ -2,6 +2,8 @@
 
 > A calm, local-first Markdown editor with live preview and export.
 
+**Try it:** [Open Paperlane on GitHub Pages](https://ramesh-2001-2100.github.io/paperlane/)
+
 Paperlane is a small, browser-based studio for writing and reading Markdown without an account, installation, or cloud sync. Open it on a computer or in a modern browser on Android or iOS, write or import a Markdown file, then read it in a polished live preview or export it for offline reading.
 
 ## Why Paperlane?
@@ -26,6 +28,7 @@ It is useful when you want a quick, pleasant way to read a `.md` file online, wr
 - Markdown, PDF, and EPUB export
 - Separate typeface choices for writing and reading
 - Familiar Markdown formatting shortcuts and toolbar actions
+- Low-friction preview navigation: page through the rendered document with a tap or click
 
 ## Use it
 
@@ -36,6 +39,12 @@ Paperlane has no build step or dependencies to install.
 3. Start writing, or choose **Open markdown** to load an existing file.
 
 Your documents are saved locally in that browser. To move a document elsewhere, export it as Markdown, PDF, or EPUB.
+
+### Preview navigation
+
+In the rendered preview, tap or click the right half to move down by 93% of the visible reading area; use the left half to move back up by the same amount. On a keyboard, focus the preview and use the left and right arrow keys; `Enter` repeats the last direction.
+
+Normal scrolling is always available. You can still use a touch swipe, mouse wheel, trackpad, scrollbar, or any other usual browser scrolling method whenever you prefer.
 
 ### Export formats
 
